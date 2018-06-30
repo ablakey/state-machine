@@ -34,6 +34,7 @@ function styleFn(feature) {
 
 function panToCurrent() {
   let features = current.properties.touches.map(sc => statesByCode[sc]);
+  features.push(current);
   let touchesLayer =  L.geoJSON({type: 'FeatureCollection', features});
   map.fitBounds(touchesLayer.getBounds());
   layer.setStyle(styleFn); // Triggers redraw.
