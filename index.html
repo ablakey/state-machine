@@ -14,21 +14,18 @@
             integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
             crossorigin="">
         </script>
-        <h1 id="title">The State Machine</h1>
-        <h3 id="title">Try to visit every state!</h3>
+        <div class="centered">
+            <h1 id="title">The State Machine</h1>
+            <h3>Click and try to visit every U.S. state once.</h3>
+        </div>
         <div id="map"></div>
-            <h2>Rules:</h2>
-            <ul>
-                <li>Walking only. No swimming.</li>
-                <li>You are banned from each state during your visit.</li>
-            </ul>
-            <h2>Tips:</h2>
-            <ul>
-                <li>Alaska and Hawaii are not included.</li>
-                <li>I haven't actually checked if you can visit every state.</li>
-                <li>But you definitely have to start or end in Maine.</li>
-                <li>Foo</li>
-            </ul>
+        <div class="centered">
+            <h2 id="score">Score: 0 of 48</h2>
+            <button id="reset">Reset</button>
+            </div>
+        </div>
+        <p></p>
+        <span>A pointless click by </span><a href="http://todays.pointless.click">Andrew Blakey</a>
         <script src="states.js"></script>
         <script src="main.js"></script>
     </body>

@@ -1,10 +1,9 @@
 
 // Map feature styles.
-const baseStyle = {opacity: 0.3, fillOpacity: 0.3, weight: 2}
-
+const baseStyle = {opacity: 0.3, fillOpacity: 0.3, weight: 2};
 const currentStyle = Object.assign({}, baseStyle, {color: 'red', fillColor: 'red'});
-const touchingStyle = Object.assign({}, baseStyle, {color: 'black', fillColor: 'white'});
-const visitedStyle = Object.assign({}, baseStyle, {color: 'blue', fillColor: 'blue',  opacity: 1});
+const touchingStyle = Object.assign({}, baseStyle, {color: 'black', fillColor: 'lightgrey'});
+const visitedStyle = Object.assign({}, baseStyle, {color: 'green', fillColor: 'green',  opacity: 1});
 const nullStyle = Object.assign({}, baseStyle, {opacity: 0,  fillOpacity: 0});
 
 
@@ -12,63 +11,87 @@ const nullStyle = Object.assign({}, baseStyle, {opacity: 0,  fillOpacity: 0});
 let statesByCode = States['features'].reduce((acc, s) => {
   acc[s.properties.shortcode] = s;
   return acc;
-}, {})
+}, {});
 
 
-let current = statesByCode['ME'] // TODO randomize start.
-let visited = new Set([current.properties.shortcode]);
-
-
-let map = L.map('map').setView([39, -98], 4);
-let layer = L.geoJSON(States, {style: styleFn})
+let current = null;
+let visited = [];
+let map = null;
+let layer = null;
 
 
 function styleFn(feature) {
-  let sc = feature.properties.shortcode
+  let sc = feature.properties.shortcode;
   if (sc === current.properties.shortcode) {
     return currentStyle;
-  } else if (visited.has(sc)) {
+  } else if (visited.includes(sc)) {
     return visitedStyle;
   } else if (current.properties.touches.includes(sc)) {
-    console.log(sc);
     return touchingStyle;
   }
   return nullStyle;
 }
 
 
-function onClick(e) {
-  console.log(e);
-  let sc = e.layer.feature.properties.shortcode
-  // if clicked feature touches current state,
-  if (current.properties.touches.includes(sc) && !visited.has(sc)) {
-    current = statesByCode[sc]
-    visited.add(sc);
-    layer.setStyle(styleFn); // Triggers redraw.
-  }
-}
-
-
-function reset() {
-  current = statesByCode['NY'];
-  visited.clear()
-  visited.add(current.properties.shortcode);
+function panToCurrent() {
+  let features = current.properties.touches.map(sc => statesByCode[sc]);
+  let touchesLayer =  L.geoJSON({type: 'FeatureCollection', features});
+  map.fitBounds(touchesLayer.getBounds());
   layer.setStyle(styleFn); // Triggers redraw.
 }
 
-window.onload = () => {
-  layer.on('click', onClick)
-  layer.addTo(map);
+
+function endGame() {
+  map.fitBounds(layer.getBounds());
 }
 
-/*
-TODO:
-- style the html to look okay.
-- add link back to blog.
-- watch for screen resize and re-zoom to max extent
-- disable zoom pan controls.
-- show list of states by name (generate programmatically iterating through States)
-- when state is visited, set it to green.
-- get rid of the red/white/blue (political)
-- detect lose state.
-*/
+
+function updateScore() {
+  let el = document.querySelector('#score');
+  el.textContent = `Score: ${visited.length} of ${States['features'].length}`;
+}
+
+
+function onClick(e) {
+  let sc = e.layer.feature.properties.shortcode;
+
+  // Was invalid state clicked?
+  if (!(current.properties.touches.includes(sc) && !visited.includes(sc))) {
+    return;
+  }
+
+  // Update state.
+  current = statesByCode[sc];
+  visited.push(sc);
+  panToCurrent();
+
+  // Update score
+  updateScore();
+
+  // Is game over? (every touching state has been visited)
+  if (!current.properties.touches.filter(x => visited.indexOf(x) < 0).length) {
+    endGame();
+  }
+}
+
+function reset() {
+  let startState = States['features'][Math.floor(Math.random() * States['features'].length)];
+  current = statesByCode[startState.properties.shortcode];
+  visited = [];
+  visited.push(current.properties.shortcode);
+  updateScore();
+
+  if (map) {
+    panToCurrent();
+  }
+}
+
+window.onload = () => {
+  document.querySelector('#reset').onclick = reset;
+  reset();
+  map =  L.map('map', {zoomControl: false, attributionControl: false}).setView([39, -98], 4);
+  layer = L.geoJSON(States, {style: styleFn});
+  layer.on('click', onClick);
+  layer.addTo(map);
+  panToCurrent();
+};
