@@ -1,5 +1,4 @@
 
-// Map feature styles.
 const baseStyle = {opacity: 0.3, fillOpacity: 0.3, weight: 2};
 const currentStyle = Object.assign({}, baseStyle, {color: 'red', fillColor: 'red'});
 const touchingStyle = Object.assign({}, baseStyle, {color: 'black', fillColor: 'lightgrey'});
